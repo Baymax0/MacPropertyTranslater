@@ -18,10 +18,6 @@ mac开发小工具
 
 
 
-正常使用效果：
-[](http://leeze.me/img/articles/2018-1-31_interface/img1.png)
 
-各种输入格式的转换效果：
-[](http://leeze.me/img/articles/2018-1-31_interface/img2.png)
-
+[在我的博客中关于它的介绍及效果](http://leezw.me/2018/01/31/interface/)
 
