@@ -125,6 +125,85 @@
     }
 }
 
+- (IBAction)transformToSwift:(id)sender {
+    //文本内容
+    NSMutableString *str = _textView1.textStorage.mutableString;
+    //行为单位创建数组
+    NSArray *arr = [str componentsSeparatedByString:@"\n"];
+    //最终的结果字符串
+    NSMutableString *result = [NSMutableString string];
+    
+    [result appendString:[NSString stringWithFormat:@"import Foundation \n"]];
+    [result appendString:[NSString stringWithFormat:@"import HandyJSON \n"]];
+
+    for (int y=0 ; y<arr.count; y++) {
+        NSString *sentence = arr[y];
+        
+        if ([sentence containsString:@"@interface"]){
+            // 文件头
+            [result appendString:[NSString stringWithFormat:@"class <#name#> :HandyJSON{ \n"]];
+            continue;
+        }
+        
+        //1. 删除开头空格 判断是否是空行
+        sentence = [self deleteHeadBlank:sentence];
+        sentence = [self deleteContinuousBlank:sentence];//删除连续的空格
+        if (sentence.length==0) {//空行跳过
+            continue;
+        }
+        
+        //3. 将数据分为三部分
+        NSString *typeStr = nil;//数据类型
+        NSString *propertyName = nil;//字段名称
+        NSString *notes = nil;//注释
+
+        // 注释
+        NSArray *temp = [sentence componentsSeparatedByString:@";"];
+        if (temp.count > 1){
+            notes = temp[1];
+            notes = [self deleteHeadBlank:notes];
+        }
+        
+        // 名称
+        NSString* sentence2 = temp[0];
+        NSArray *temp2 = [sentence2 componentsSeparatedByString:@"*"];
+        if (temp2.count > 1){
+            propertyName = temp2[1];
+        }
+        
+        // 类型
+        
+        if( [sentence containsString:@"NSString"]){
+            typeStr = @"String!";
+        }else if([sentence containsString:@"1"] || [sentence containsString:@"2"] || [sentence containsString:@"3"]|| [sentence containsString:@" 0"]){
+            typeStr = @"Int!";
+        }else if( [sentence containsString:@"NSNumber"]){
+            typeStr = @"Double!";
+        }else {
+            typeStr = @"Any!";
+        }
+        
+        //获得属性
+        NSString *property = [NSString stringWithFormat:@"var %@  :%@ ",propertyName,typeStr];
+        [result appendString:[NSString stringWithFormat:@"%@%@\n",property,notes]];
+    }
+    
+    [result appendString:[NSString stringWithFormat:@" \nrequired init() {} \n"]];
+    [result appendString:[NSString stringWithFormat:@"} \n"]];
+
+    
+    
+    //将结果 输出到 结果框里
+    [_textView2 replaceCharactersInRange: NSMakeRange (0, [[_textView2 string] length]) withString: result];
+    
+    //复制到剪切板
+    if (AutoCopy==1) {
+        [self copyResult:nil];
+    }
+}
+
+
+
 #pragma mark ----------  字符串处理方法  ----------
 //判断是否是英文
 - (BOOL)isEnglishString:(NSString *)str {
